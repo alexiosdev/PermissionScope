@@ -543,7 +543,7 @@ typealias resultsForConfigClosure     = ([PermissionResult]) -> Void
     */
     public func statusNotifications() -> PermissionStatus {
         let settings = UIApplication.shared().currentUserNotificationSettings()
-        if let settingTypes = settings?.types where settingTypes != UIUserNotificationType() {
+        if let settingTypes = settings?.types , settingTypes != UIUserNotificationType() {
             return .authorized
         } else {
             if defaults.bool(forKey: Constants.NSUserDefaultsKeys.requestedNotifications) {
@@ -604,7 +604,8 @@ typealias resultsForConfigClosure     = ([PermissionResult]) -> Void
         defaults.set(true, forKey: Constants.NSUserDefaultsKeys.requestedNotifications)
         defaults.synchronize()
         
-        DispatchQueue.main.after(when: DispatchTime.now() + Double(Int64(0.1 * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC), execute: {
+        
+        DispatchQueue.main.after(when: DispatchTime.now() + .microseconds(100), execute: {
             self.getResultsForConfig { results in
                 guard let notificationResult = results
                     .first({ $0.type == .notifications }) else { return }
@@ -951,7 +952,7 @@ typealias resultsForConfigClosure     = ([PermissionResult]) -> Void
         motionManager.queryActivityStarting(from: today,
             to: today,
             to: .main) { activities, error in
-                if let error = error where error.code == Int(CMErrorMotionActivityNotAuthorized.rawValue) {
+                if let error = error , error.code == Int(CMErrorMotionActivityNotAuthorized.rawValue) {
                     self.motionPermissionStatus = .unauthorized
                 } else {
                     self.motionPermissionStatus = .authorized

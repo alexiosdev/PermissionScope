@@ -35,7 +35,7 @@ extension Sequence {
     
     - returns: First element that satisfies the predicate, or nil.
     */
-    func first( _ includeElement: @noescape (Iterator.Element) -> Bool) -> Iterator.Element? {
+    func first( _ includeElement: (Iterator.Element) -> Bool) -> Iterator.Element? {
         for x in self where includeElement(x) { return x }
         return nil
     }

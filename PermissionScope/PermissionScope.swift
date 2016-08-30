@@ -15,10 +15,12 @@ import EventKit
 import CoreBluetooth
 import CoreMotion
 import Contacts
+import QuartzCore
+import CoreGraphics
 
-public typealias statusRequestClosure = (status: PermissionStatus) -> Void
-public typealias authClosureType      = (finished: Bool, results: [PermissionResult]) -> Void
-public typealias cancelClosureType    = (results: [PermissionResult]) -> Void
+public typealias statusRequestClosure = (PermissionStatus) -> Void
+public typealias authClosureType      = (Bool, [PermissionResult]) -> Void
+public typealias cancelClosureType    = ([PermissionResult]) -> Void
 typealias resultsForConfigClosure     = ([PermissionResult]) -> Void
 
 @objc public class PermissionScope: UIViewController, CLLocationManagerDelegate, UIGestureRecognizerDelegate, CBPeripheralManagerDelegate {
@@ -40,7 +42,7 @@ typealias resultsForConfigClosure     = ([PermissionResult]) -> Void
     /// Corner radius for the permission buttons.
     public var permissionButtonCornerRadius : CGFloat = 6
     /// Color for the permission labels' text color.
-    public var permissionLabelColor:UIColor = .black()
+    public var permissionLabelColor:UIColor = .black
     /// Font used for all the UIButtons
     public var buttonFont:UIFont            = .boldSystemFont(ofSize: 14)
     /// Font used for all the UILabels
@@ -107,7 +109,7 @@ typealias resultsForConfigClosure     = ([PermissionResult]) -> Void
     
     - parameter completion: Closure used to send the result of the check.
     */
-    func allAuthorized(_ completion: (Bool) -> Void ) {
+    func allAuthorized(_ completion: @escaping (Bool) -> Void ) {
         getResultsForConfig{ results in
             let result = results
                 .first(where: { $0.status != .authorized})
@@ -122,7 +124,7 @@ typealias resultsForConfigClosure     = ([PermissionResult]) -> Void
     
     - parameter completion: Closure used to send the result of the check.
     */
-    func requiredAuthorized(_ completion: (Bool) -> Void ) {
+    func requiredAuthorized(_ completion: @escaping (Bool) -> Void ) {
         getResultsForConfig{ results in
             let result = results
                 .first(where: {$0.status != .authorized})
@@ -156,7 +158,7 @@ typealias resultsForConfigClosure     = ([PermissionResult]) -> Void
 		viewControllerForAlerts = self
 		
         // Set up main view
-        view.frame = UIScreen.main().bounds
+        view.frame = UIScreen.main.bounds
         view.autoresizingMask = [UIViewAutoresizing.flexibleHeight, UIViewAutoresizing.flexibleWidth]
         view.backgroundColor = UIColor(red:0, green:0, blue:0, alpha:0.7)
         view.addSubview(baseView)
@@ -169,14 +171,14 @@ typealias resultsForConfigClosure     = ([PermissionResult]) -> Void
             baseView.addGestureRecognizer(tap)
         }
         // Content View
-        contentView.backgroundColor = UIColor.white()
+        contentView.backgroundColor = UIColor.white
         contentView.layer.cornerRadius = 10
         contentView.layer.masksToBounds = true
         contentView.layer.borderWidth = 0.5
 
         // header label
         headerLabel.font = UIFont.systemFont(ofSize: 22)
-        headerLabel.textColor = UIColor.black()
+        headerLabel.textColor = UIColor.black
         headerLabel.textAlignment = NSTextAlignment.center
         headerLabel.text = "Hey, listen!".localized
 
@@ -184,7 +186,7 @@ typealias resultsForConfigClosure     = ([PermissionResult]) -> Void
 
         // body label
         bodyLabel.font = UIFont.boldSystemFont(ofSize: 16)
-        bodyLabel.textColor = UIColor.black()
+        bodyLabel.textColor = UIColor.black
         bodyLabel.textAlignment = NSTextAlignment.center
         bodyLabel.text = "We need a couple things\r\nbefore you get started.".localized
         bodyLabel.numberOfLines = 2
@@ -217,7 +219,7 @@ typealias resultsForConfigClosure     = ([PermissionResult]) -> Void
 
     public override func viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
-        let screenSize = UIScreen.main().bounds.size
+        let screenSize = UIScreen.main.bounds.size
         // Set background frame
         view.frame.size = screenSize
         // Set frames
@@ -238,18 +240,18 @@ typealias resultsForConfigClosure     = ([PermissionResult]) -> Void
 
         // offset the header from the content center, compensate for the content's offset
         headerLabel.center = contentView.center
-        headerLabel.frame.offsetInPlace(dx: -contentView.frame.origin.x, dy: -contentView.frame.origin.y)
-        headerLabel.frame.offsetInPlace(dx: 0, dy: -((dialogHeight/2)-50))
+        headerLabel.frame = headerLabel.frame.offsetBy(dx: -contentView.frame.origin.x, dy: -contentView.frame.origin.y)
+        headerLabel.frame = headerLabel.frame.offsetBy(dx: 0, dy: -((dialogHeight/2)-50))
 
         // ... same with the body
         bodyLabel.center = contentView.center
-        bodyLabel.frame.offsetInPlace(dx: -contentView.frame.origin.x, dy: -contentView.frame.origin.y)
-        bodyLabel.frame.offsetInPlace(dx: 0, dy: -((dialogHeight/2)-100))
+        bodyLabel.frame = bodyLabel.frame.offsetBy(dx: -contentView.frame.origin.x, dy: -contentView.frame.origin.y)
+        bodyLabel.frame = bodyLabel.frame.offsetBy(dx: 0, dy: -((dialogHeight/2)-100))
         
         closeButton.center = contentView.center
-        closeButton.frame.offsetInPlace(dx: -contentView.frame.origin.x, dy: -contentView.frame.origin.y)
-        closeButton.frame.offsetInPlace(dx: 105, dy: -((dialogHeight/2)-20))
-        closeButton.frame.offsetInPlace(dx: self.closeOffset.width, dy: self.closeOffset.height)
+        closeButton.frame = closeButton.frame.offsetBy(dx: -contentView.frame.origin.x, dy: -contentView.frame.origin.y)
+        closeButton.frame = closeButton.frame.offsetBy(dx: 105, dy: -((dialogHeight/2)-20))
+        closeButton.frame = closeButton.frame.offsetBy(dx: self.closeOffset.width, dy: self.closeOffset.height)
         if let _ = closeButton.imageView?.image {
             closeButton.setTitle("", for: UIControlState())
         }
@@ -259,8 +261,8 @@ typealias resultsForConfigClosure     = ([PermissionResult]) -> Void
         var index = 0
         for button in permissionButtons {
             button.center = contentView.center
-            button.frame.offsetInPlace(dx: -contentView.frame.origin.x, dy: -contentView.frame.origin.y)
-            button.frame.offsetInPlace(dx: 0, dy: -((dialogHeight/2)-160) + CGFloat(index * baseOffset))
+            button.frame = button.frame.offsetBy(dx: -contentView.frame.origin.x, dy: -contentView.frame.origin.y)
+            button.frame = button.frame.offsetBy(dx: 0, dy: -((dialogHeight/2)-160) + CGFloat(index * baseOffset))
             
             let type = configuredPermissions[index].type
             
@@ -280,8 +282,8 @@ typealias resultsForConfigClosure     = ([PermissionResult]) -> Void
                     
                     let label = self.permissionLabels[index]
                     label.center = self.contentView.center
-                    label.frame.offsetInPlace(dx: -self.contentView.frame.origin.x, dy: -self.contentView.frame.origin.y)
-                    label.frame.offsetInPlace(dx: 0, dy: -((dialogHeight/2)-205) + CGFloat(index * baseOffset))
+                    label.frame = label.frame.offsetBy(dx: -self.contentView.frame.origin.x, dy: -self.contentView.frame.origin.y)
+                    label.frame = label.frame.offsetBy(dx: 0, dy: -((dialogHeight/2)-205) + CGFloat(index * baseOffset))
                     
                     index = index + 1
             })
@@ -348,7 +350,7 @@ typealias resultsForConfigClosure     = ([PermissionResult]) -> Void
     func setButtonAuthorizedStyle(_ button: UIButton) {
         button.layer.borderWidth = 0
         button.backgroundColor = authorizedButtonColor
-        button.setTitleColor(.white(), for: UIControlState())
+        button.setTitleColor(.white, for: UIControlState())
     }
     
     /**
@@ -359,7 +361,7 @@ typealias resultsForConfigClosure     = ([PermissionResult]) -> Void
     func setButtonUnauthorizedStyle(_ button: UIButton) {
         button.layer.borderWidth = 0
         button.backgroundColor = unauthorizedButtonColor ?? authorizedButtonColor.inverseColor
-        button.setTitleColor(.white(), for: UIControlState())
+        button.setTitleColor(.white, for: UIControlState())
     }
 
     /**
@@ -416,7 +418,7 @@ typealias resultsForConfigClosure     = ([PermissionResult]) -> Void
     */
     public func requestLocationAlways() {
     	let hasAlwaysKey:Bool = !Bundle.main
-    		.objectForInfoDictionaryKey(Constants.InfoPlistKeys.locationAlways).isNil
+    		.object(forInfoDictionaryKey: Constants.InfoPlistKeys.locationAlways).isNil
     	assert(hasAlwaysKey, Constants.InfoPlistKeys.locationAlways + " not found in Info.plist.")
     	
         let status = statusLocationAlways()
@@ -462,7 +464,7 @@ typealias resultsForConfigClosure     = ([PermissionResult]) -> Void
     */
     public func requestLocationInUse() {
     	let hasWhenInUseKey :Bool = !Bundle.main
-    		.objectForInfoDictionaryKey(Constants.InfoPlistKeys.locationWhenInUse).isNil
+    		.object(forInfoDictionaryKey: Constants.InfoPlistKeys.locationWhenInUse).isNil
     	assert(hasWhenInUseKey, Constants.InfoPlistKeys.locationWhenInUse + " not found in Info.plist.")
     	
         let status = statusLocationInUse()
@@ -542,7 +544,7 @@ typealias resultsForConfigClosure     = ([PermissionResult]) -> Void
     - returns: Permission status for the requested type.
     */
     public func statusNotifications() -> PermissionStatus {
-        let settings = UIApplication.shared().currentUserNotificationSettings()
+        let settings = UIApplication.shared.currentUserNotificationSettings
         if let settingTypes = settings?.types , settingTypes != UIUserNotificationType() {
             return .authorized
         } else {
@@ -604,8 +606,7 @@ typealias resultsForConfigClosure     = ([PermissionResult]) -> Void
         defaults.set(true, forKey: Constants.NSUserDefaultsKeys.requestedNotifications)
         defaults.synchronize()
         
-        
-        DispatchQueue.main.after(when: DispatchTime.now() + .microseconds(100), execute: {
+        DispatchQueue.main.asyncAfter(deadline: .now() + .microseconds(100), execute: {
             self.getResultsForConfig { results in
                 guard let notificationResult = results
                     .first({ $0.type == .notifications }) else { return }
@@ -633,7 +634,7 @@ typealias resultsForConfigClosure     = ([PermissionResult]) -> Void
             
             notificationTimer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(finishedShowingNotificationPermission), userInfo: nil, repeats: false)
             
-            UIApplication.shared().registerUserNotificationSettings(
+            UIApplication.shared.registerUserNotificationSettings(
                 UIUserNotificationSettings(types: [.alert, .sound, .badge],
                 categories: notificationsPermissionSet)
             )
@@ -952,7 +953,7 @@ typealias resultsForConfigClosure     = ([PermissionResult]) -> Void
         motionManager.queryActivityStarting(from: today,
             to: today,
             to: .main) { activities, error in
-                if let error = error , error.code == Int(CMErrorMotionActivityNotAuthorized.rawValue) {
+                if let error = error , (error as NSError).code == Int(CMErrorMotionActivityNotAuthorized.rawValue) {
                     self.motionPermissionStatus = .unauthorized
                 } else {
                     self.motionPermissionStatus = .authorized
@@ -1005,7 +1006,7 @@ typealias resultsForConfigClosure     = ([PermissionResult]) -> Void
                 if areAuthorized {
                     self.getResultsForConfig({ results in
 
-                        self.onAuthChange?(finished: true, results: results)
+                        self.onAuthChange?(true, results)
                     })
                 } else {
                     self.showAlert()
@@ -1019,7 +1020,7 @@ typealias resultsForConfigClosure     = ([PermissionResult]) -> Void
     */
     private func showAlert() {
         // add the backing views
-        let window = UIApplication.shared().keyWindow!
+        let window = UIApplication.shared.keyWindow!
         
         //hide KB if it is shown
         window.endEditing(true)
@@ -1069,7 +1070,7 @@ typealias resultsForConfigClosure     = ([PermissionResult]) -> Void
     Hides the modal viewcontroller with an animation.
     */
     public func hide() {
-        let window = UIApplication.shared().keyWindow!
+        let window = UIApplication.shared.keyWindow!
 
         DispatchQueue.main.async(execute: {
             UIView.animate(withDuration: 0.2, animations: {
@@ -1119,7 +1120,7 @@ typealias resultsForConfigClosure     = ([PermissionResult]) -> Void
         
         if let onCancel = onCancel {
             getResultsForConfig({ results in
-                onCancel(results: results)
+                onCancel(results)
             })
         }
     }
@@ -1133,7 +1134,7 @@ typealias resultsForConfigClosure     = ([PermissionResult]) -> Void
         // compile the results and pass them back if necessary
         if let onDisabledOrDenied = self.onDisabledOrDenied {
             self.getResultsForConfig({ results in
-                onDisabledOrDenied(results: results)
+                onDisabledOrDenied(results)
             })
         }
         
@@ -1149,7 +1150,7 @@ typealias resultsForConfigClosure     = ([PermissionResult]) -> Void
                 NotificationCenter.default.addObserver(self, selector: #selector(self.appForegroundedAfterSettings), name: NSNotification.Name.UIApplicationDidBecomeActive, object: nil)
                 
                 let settingsUrl = URL(string: UIApplicationOpenSettingsURLString)
-                UIApplication.shared().openURL(settingsUrl!)
+                UIApplication.shared.openURL(settingsUrl!)
         }))
         
         DispatchQueue.main.async {
@@ -1167,7 +1168,7 @@ typealias resultsForConfigClosure     = ([PermissionResult]) -> Void
         // compile the results and pass them back if necessary
         if let onDisabledOrDenied = self.onDisabledOrDenied {
             self.getResultsForConfig({ results in
-                onDisabledOrDenied(results: results)
+                onDisabledOrDenied(results)
             })
         }
         
@@ -1183,7 +1184,7 @@ typealias resultsForConfigClosure     = ([PermissionResult]) -> Void
                 NotificationCenter.default.addObserver(self, selector: #selector(self.appForegroundedAfterSettings), name: NSNotification.Name.UIApplicationDidBecomeActive, object: nil)
                 
                 let settingsUrl = URL(string: UIApplicationOpenSettingsURLString)
-                UIApplication.shared().openURL(settingsUrl!)
+                UIApplication.shared.openURL(settingsUrl!)
         }))
         
         DispatchQueue.main.async {
@@ -1241,7 +1242,7 @@ typealias resultsForConfigClosure     = ([PermissionResult]) -> Void
         }
         
         // Perform completion
-        completion(status: permissionStatus)
+        completion(permissionStatus)
     }
     
     /**
@@ -1255,7 +1256,7 @@ typealias resultsForConfigClosure     = ([PermissionResult]) -> Void
             if let onAuthChange = self.onAuthChange {
                 self.getResultsForConfig({ results in
                     self.allAuthorized({ areAuthorized in
-                        onAuthChange(finished: areAuthorized, results: results)
+                        onAuthChange(areAuthorized, results)
                     })
                 })
             }
